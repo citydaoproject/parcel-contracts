@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "pretty": true,
+    "module": "commonjs",
+    "target": "es2015",
+    "lib": ["es6", "esnext.asynciterable"],
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "../out/test"
+  },
+  "files": [
+    "../node_modules/@nomiclabs/hardhat-ethers/internal/index.d.ts",
+    "../node_modules/@types/mocha/index.d.ts",
+    "../node_modules/@types/chai/index.d.ts",
+    "../node_modules/@types/chai-as-promised/index.d.ts",
+    "../node_modules/@ethereum-waffle/chai/dist/esm/types.d.ts"
+  ],
+  "include": ["./**/*.ts", "./**/*.tsx"]
+}

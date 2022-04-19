@@ -1,0 +1,7 @@
+require:
+  - 'hardhat'
+  - './test/setup/ChaiSetup.ts'
+file:
+  - './test/setup/AccountsLoader.ts'
+spec:
+  - 'test/**/*.spec.ts'
