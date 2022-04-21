@@ -28,7 +28,7 @@
     "build:watch": "tsc --watch",
     "copy-declarations": "cp -R types dist",
     "rebuild": "npm run clean && npm run build",
-    "test": "ts-mocha",
+    "test": "hardhat test",
     "posttest": "npm run lint",
     "lint": "solhint 'contracts/**/*.sol' && eslint",
     "pretty": "pretty-quick",
