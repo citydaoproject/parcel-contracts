@@ -1,6 +1,6 @@
-import { EthereumAddress, ZERO_ADDRESS } from '../../src/constants/accounts';
-import { ParcelNFT__factory } from '../../types/contracts';
-import { INITIALIZER } from './Accounts';
+import { EthereumAddress, ZERO_ADDRESS } from '../../../src/constants/accounts';
+import { ParcelNFT__factory } from '../../../types/contracts';
+import { INITIALIZER } from '../Accounts';
 
 export const createParcelNFT = async (superAdmin: EthereumAddress = ZERO_ADDRESS) => {
   const parcelNFT = await deployParcelNFT();
