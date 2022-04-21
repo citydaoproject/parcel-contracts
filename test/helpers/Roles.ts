@@ -1,4 +1,4 @@
-import { toAccessRole } from '../../dist/contracts/access';
+import { toAccessRole } from '../../src/constants/roles';
 
 export const ROLE1 = toAccessRole(1);
 export const ROLE2 = toAccessRole(2);
