@@ -7,44 +7,44 @@ import { ROLE1 } from '../../helpers/Roles';
 
 describe('initialized with zero address', () => {
   it('should set caller as super admin', async () => {
-    const parcelNFT = await createParcelNFT(ZERO_ADDRESS);
-    expect(parcelNFT.hasRole(SUPER_ADMIN_ROLE, INITIALIZER.address)).to.eventually.be.true;
-    expect(parcelNFT.hasRole(SUPER_ADMIN_ROLE, USER1.address)).to.eventually.be.false;
+    const parcelNFT = await createParcelNFT({ superAdmin: ZERO_ADDRESS });
+    expect(await parcelNFT.hasRole(SUPER_ADMIN_ROLE, INITIALIZER.address)).to.be.true;
+    expect(await parcelNFT.hasRole(SUPER_ADMIN_ROLE, USER1.address)).to.be.false;
   });
 
   it('should allow caller to change roles', async () => {
-    const parcelNFT = await createParcelNFT(ZERO_ADDRESS);
+    const parcelNFT = await createParcelNFT({ superAdmin: ZERO_ADDRESS });
     await parcelNFT.grantRole(ROLE1, USER1.address);
 
-    expect(parcelNFT.hasRole(ROLE1, USER1.address)).to.eventually.be.true;
+    expect(await parcelNFT.hasRole(ROLE1, USER1.address)).to.be.true;
   });
 
   it('should not allow others to change roles', async () => {
-    const parcelNFT = await createParcelNFT(ZERO_ADDRESS);
-    await expect(parcelNFT.connect(USER1).grantRole(ROLE1, USER1.address)).to.be.rejectedWith('missing role');
+    const parcelNFT = await createParcelNFT({ superAdmin: ZERO_ADDRESS });
+    await expect(parcelNFT.connect(USER1).grantRole(ROLE1, USER1.address)).to.be.revertedWith('missing role');
 
-    expect(parcelNFT.hasRole(ROLE1, USER1.address)).to.eventually.be.false;
+    expect(await parcelNFT.hasRole(ROLE1, USER1.address)).to.be.false;
   });
 });
 
 describe('initialized with another address', () => {
   it('should set caller as super admin', async () => {
-    const parcelNFT = await createParcelNFT(USER1.address);
-    expect(parcelNFT.hasRole(SUPER_ADMIN_ROLE, USER1.address)).to.eventually.be.true;
-    expect(parcelNFT.hasRole(SUPER_ADMIN_ROLE, INITIALIZER.address)).to.eventually.be.false;
+    const parcelNFT = await createParcelNFT({ superAdmin: USER1.address });
+    expect(await parcelNFT.hasRole(SUPER_ADMIN_ROLE, USER1.address)).to.be.true;
+    expect(await parcelNFT.hasRole(SUPER_ADMIN_ROLE, INITIALIZER.address)).to.be.false;
   });
 
   it('should allow caller to change roles', async () => {
-    const parcelNFT = await createParcelNFT(USER1.address);
+    const parcelNFT = await createParcelNFT({ superAdmin: USER1.address });
     await parcelNFT.connect(USER1).grantRole(ROLE1, USER2.address);
 
-    expect(parcelNFT.hasRole(ROLE1, USER2.address)).to.eventually.be.true;
+    expect(await parcelNFT.hasRole(ROLE1, USER2.address)).to.be.true;
   });
 
   it('should not allow others to change roles', async () => {
-    const parcelNFT = await createParcelNFT(USER1.address);
-    await expect(parcelNFT.connect(USER2).grantRole(ROLE1, USER2.address)).to.be.rejectedWith('missing role');
+    const parcelNFT = await createParcelNFT({ superAdmin: USER1.address });
+    await expect(parcelNFT.connect(USER2).grantRole(ROLE1, USER2.address)).to.be.revertedWith('missing role');
 
-    expect(parcelNFT.hasRole(ROLE1, USER2.address)).to.eventually.be.false;
+    expect(await parcelNFT.hasRole(ROLE1, USER2.address)).to.be.false;
   });
 });
