@@ -8,12 +8,12 @@ import { getProxyImplementationAddress } from '../../helpers/contracts/ProxyHelp
 describe('createParcelNFT', () => {
   it('should create and initialize the contract', async () => {
     const parcelNFTLogic = await deployParcelNFT();
-    const parcelNFT = await createParcelNFT(INITIALIZER, parcelNFTLogic.address, USER1.address);
+    const parcelNFT = await createParcelNFT(INITIALIZER, parcelNFTLogic.address, { superAdmin: USER1.address });
 
-    expect(getProxyImplementationAddress(parcelNFT)).to.eventually.eq(parcelNFTLogic.address);
+    expect(await getProxyImplementationAddress(parcelNFT)).to.eq(parcelNFTLogic.address);
 
-    expect(parcelNFT.hasRole(SUPER_ADMIN_ROLE, USER1.address)).to.eventually.be.true;
-    expect(parcelNFT.hasRole(SUPER_ADMIN_ROLE, INITIALIZER.address)).to.eventually.be.false;
+    expect(await parcelNFT.hasRole(SUPER_ADMIN_ROLE, USER1.address)).to.be.true;
+    expect(await parcelNFT.hasRole(SUPER_ADMIN_ROLE, INITIALIZER.address)).to.be.false;
   });
 
   it('should create upgradeable contract', async () => {
@@ -24,7 +24,7 @@ describe('createParcelNFT', () => {
     const newParcelNFTLogic = await deployParcelNFT();
     await parcelNFT.upgradeTo(newParcelNFTLogic.address);
 
-    expect(getProxyImplementationAddress(parcelNFT)).to.eventually.eq(newParcelNFTLogic.address);
+    expect(await getProxyImplementationAddress(parcelNFT)).to.eq(newParcelNFTLogic.address);
   });
 
   it('should fail to upgrade when not an upgrader', async () => {
@@ -33,8 +33,8 @@ describe('createParcelNFT', () => {
     await parcelNFT.grantRole(UPGRADER_ROLE, INITIALIZER.address);
 
     const newParcelNFTLogic = await deployParcelNFT();
-    await expect(parcelNFT.connect(USER1).upgradeTo(newParcelNFTLogic.address)).to.be.rejectedWith('missing role');
+    await expect(parcelNFT.connect(USER1).upgradeTo(newParcelNFTLogic.address)).to.be.revertedWith('missing role');
 
-    expect(getProxyImplementationAddress(parcelNFT)).to.eventually.eq(parcelNFTLogic.address);
+    expect(await getProxyImplementationAddress(parcelNFT)).to.eq(parcelNFTLogic.address);
   });
 });
