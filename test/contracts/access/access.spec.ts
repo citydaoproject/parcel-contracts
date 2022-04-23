@@ -3,7 +3,7 @@ import { ZERO_ADDRESS } from '../../../src/constants/accounts';
 import { SUPER_ADMIN_ROLE } from '../../../src/constants/roles';
 import { INITIALIZER, USER1, USER2 } from '../../helpers/Accounts';
 import { createParcelNFT } from '../../helpers/contracts/ParcelNFTHelper';
-import { ROLE1 } from '../../helpers/Roles';
+import { ROLE1, ROLE2 } from '../../helpers/Roles';
 
 describe('initialized with zero address', () => {
   it('should set caller as super admin', async () => {
@@ -46,5 +46,75 @@ describe('initialized with another address', () => {
     await expect(parcelNFT.connect(USER2).grantRole(ROLE1, USER2.address)).to.be.revertedWith('missing role');
 
     expect(await parcelNFT.hasRole(ROLE1, USER2.address)).to.be.false;
+  });
+});
+
+describe('grantRole', async () => {
+  it('should grant the role to the given user', async () => {
+    const parcelNFT = await createParcelNFT();
+
+    expect(await parcelNFT.hasRole(ROLE1, USER1.address)).to.be.false;
+
+    await parcelNFT.grantRole(ROLE1, USER1.address);
+
+    expect(await parcelNFT.hasRole(ROLE1, USER1.address)).to.be.true;
+    expect(await parcelNFT.hasRole(ROLE2, USER1.address)).to.be.false;
+    expect(await parcelNFT.hasRole(ROLE1, USER2.address)).to.be.false;
+  });
+
+  it('should not fail if called by other than role admin', async () => {
+    const parcelNFT = await createParcelNFT();
+
+    await expect(parcelNFT.connect(USER1).grantRole(ROLE1, USER2.address)).to.be.revertedWith('missing role');
+
+    expect(await parcelNFT.hasRole(ROLE1, USER1.address)).to.be.false;
+  });
+
+  it('should emit RoleGranted', async () => {
+    const parcelNFT = await createParcelNFT();
+
+    expect(await parcelNFT.grantRole(ROLE1, USER1.address))
+      .to.emit(parcelNFT, 'RoleGranted')
+      .withArgs(ROLE1, USER1.address, INITIALIZER.address);
+  });
+});
+
+describe('revokeRole', async () => {
+  it('should remove the role from the given user', async () => {
+    const parcelNFT = await createParcelNFT();
+
+    await parcelNFT.grantRole(ROLE1, USER1.address);
+    await parcelNFT.grantRole(ROLE2, USER1.address);
+    await parcelNFT.grantRole(ROLE1, USER2.address);
+
+    expect(await parcelNFT.hasRole(ROLE1, USER1.address)).to.be.true;
+    expect(await parcelNFT.hasRole(ROLE2, USER1.address)).to.be.true;
+    expect(await parcelNFT.hasRole(ROLE1, USER2.address)).to.be.true;
+
+    await parcelNFT.revokeRole(ROLE1, USER1.address);
+
+    expect(await parcelNFT.hasRole(ROLE1, USER1.address)).to.be.false;
+    expect(await parcelNFT.hasRole(ROLE2, USER1.address)).to.be.true;
+    expect(await parcelNFT.hasRole(ROLE1, USER2.address)).to.be.true;
+  });
+
+  it('should not fail if called by other than role admin', async () => {
+    const parcelNFT = await createParcelNFT();
+
+    await parcelNFT.grantRole(ROLE1, USER1.address);
+
+    await expect(parcelNFT.connect(USER1).revokeRole(ROLE1, USER2.address)).to.be.revertedWith('missing role');
+
+    expect(await parcelNFT.hasRole(ROLE1, USER1.address)).to.be.true;
+  });
+
+  it('should emit RoleRevoked', async () => {
+    const parcelNFT = await createParcelNFT();
+
+    await parcelNFT.grantRole(ROLE1, USER1.address);
+
+    expect(await parcelNFT.revokeRole(ROLE1, USER1.address))
+      .to.emit(parcelNFT, 'RoleRevoked')
+      .withArgs(ROLE1, USER1.address, INITIALIZER.address);
   });
 });

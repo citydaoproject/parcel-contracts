@@ -41,6 +41,15 @@ describe('pause', () => {
 
     expect(await parcelNFT.paused()).to.be.true;
   });
+
+  it('should send a Paused event', async () => {
+    const parcelNFT = await createParcelNFT();
+    await parcelNFT.grantRole(PAUSER_ROLE, INITIALIZER.address);
+
+    expect(await parcelNFT.pause())
+      .to.emit(parcelNFT, 'Paused')
+      .withArgs(INITIALIZER.address);
+  });
 });
 
 describe('unpause', () => {
@@ -83,5 +92,16 @@ describe('unpause', () => {
     expect(parcelNFT.unpause()).to.be.revertedWith('not paused');
 
     expect(await parcelNFT.paused()).to.be.false;
+  });
+
+  it('should send a Unpaused event', async () => {
+    const parcelNFT = await createParcelNFT();
+    await parcelNFT.grantRole(PAUSER_ROLE, INITIALIZER.address);
+
+    await parcelNFT.pause();
+
+    expect(await parcelNFT.unpause())
+      .to.emit(parcelNFT, 'Unpaused')
+      .withArgs(INITIALIZER.address);
   });
 });
