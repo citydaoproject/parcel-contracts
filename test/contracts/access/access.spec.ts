@@ -1,9 +1,15 @@
 import { expect } from 'chai';
 import { ZERO_ADDRESS } from '../../../src/constants/accounts';
+import { ACCESS_CONTROL_INTERFACE_ID } from '../../../src/constants/interfaces';
 import { SUPER_ADMIN_ROLE } from '../../../src/constants/roles';
 import { INITIALIZER, USER1, USER2 } from '../../helpers/Accounts';
 import { createParcelNFT } from '../../helpers/contracts/ParcelNFTHelper';
+import { shouldSupportInterface } from '../../helpers/ERC165Helper';
 import { ROLE1, ROLE2 } from '../../helpers/Roles';
+
+describe('supportsInterface', () => {
+  shouldSupportInterface('IAccessControl', () => createParcelNFT(), ACCESS_CONTROL_INTERFACE_ID);
+});
 
 describe('initialized with zero address', () => {
   it('should set caller as super admin', async () => {
