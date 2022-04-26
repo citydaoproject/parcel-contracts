@@ -46,12 +46,12 @@ pragma solidity ^0.8.7;
  * |NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN|
  * |MMNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNMM|
  * |--------------------------------------------------------------------------------|
- * 
+ *
  * Hello fellow Nerd,
  * In this smart contract we have taken every measure possible to
  * keep the costs of gas managable every step along the way. Gas during The Accidental Apocalypse
  * is hard to find -- You can't be pourin' it out on the ground like it grows on trees.
- * 
+ *
  * In this contract we've used several different methods to keep costs down for every Nerd.
  * If you came here worried because gas is so low or you don't have to pay that pesky
  * OpenSea approval fee; rejoice! Now we can get back to focusing on survival.
@@ -65,15 +65,16 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "./ERC721Enumerable.sol";
 
 interface IWasteland {
     function getScavengeRate(uint256 tokenId) external view returns (uint256);
 }
 
-contract NuclearNerds is ERC721Enumerable, Ownable {
+contract NuclearNerds is ERC721Enumerable, Ownable, Pausable {
     string  public              baseURI;
-    
+
     address public              proxyRegistryAddress;
     address public              wastelandAddress;
     address public              jeffFromAccounting;
@@ -88,9 +89,11 @@ contract NuclearNerds is ERC721Enumerable, Ownable {
     mapping(address => bool) public projectProxy;
     mapping(address => uint) public addressToMinted;
 
+    event MerkleRootChanged(bytes32 _newWhitelistMerkleRoot);
+
     constructor(
-        string memory _baseURI, 
-        address _proxyRegistryAddress, 
+        string memory _baseURI,
+        address _proxyRegistryAddress,
         address _jeffFromAccounting
     )
         ERC721("Nuclear Nerds", "Nuclear Nerds")
@@ -104,6 +107,15 @@ contract NuclearNerds is ERC721Enumerable, Ownable {
         baseURI = _baseURI;
     }
 
+
+    function setPause() public onlyOwner {
+        _pause();
+    }
+
+    function setUnpause() public onlyOwner {
+        _unpause();
+    }
+    
     function tokenURI(uint256 _tokenId) public view override returns (string memory) {
         require(_exists(_tokenId), "Token does not exist.");
         return string(abi.encodePacked(baseURI, Strings.toString(_tokenId)));
@@ -129,13 +141,15 @@ contract NuclearNerds is ERC721Enumerable, Ownable {
 
     function setWhitelistMerkleRoot(bytes32 _whitelistMerkleRoot) external onlyOwner {
         whitelistMerkleRoot = _whitelistMerkleRoot;
+        emit MerkleRootChanged(whitelistMerkleRoot);
     }
 
     function togglePublicSale(uint256 _MAX_SUPPLY) external onlyOwner {
         delete whitelistMerkleRoot;
         MAX_SUPPLY = _MAX_SUPPLY;
+    
     }
-
+    
     function _leaf(string memory allowance, string memory payload) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(payload, allowance));
     }
@@ -150,15 +164,20 @@ contract NuclearNerds is ERC721Enumerable, Ownable {
         return allowance;
     }
 
-    function whitelistMint(uint256 count, uint256 allowance, bytes32[] calldata proof) public payable {
+    // preferable
+    function allowlistMint(uint256 tokenId, bytes32[] calldata proof) public payable {
+        string memory payload = string(abi.encodePacked(_msgSender()));
+    }
+
+    function whitelistMint(uint256 count, uint256 allowance, bytes32[] calldata proof) public whenNotPaused payable {
         string memory payload = string(abi.encodePacked(_msgSender()));
         require(_verify(_leaf(Strings.toString(allowance), payload), proof), "Invalid Merkle Tree proof supplied.");
-        require(addressToMinted[_msgSender()] + count <= allowance, "Exceeds whitelist supply"); 
+        require(addressToMinted[_msgSender()] + count <= allowance, "Exceeds whitelist supply");
         require(count * priceInWei == msg.value, "Invalid funds provided.");
 
         addressToMinted[_msgSender()] += count;
         uint256 totalSupply = _owners.length;
-        for(uint i; i < count; i++) { 
+        for(uint i; i < count; i++) {
             _mint(_msgSender(), totalSupply + i);
         }
     }
@@ -168,18 +187,18 @@ contract NuclearNerds is ERC721Enumerable, Ownable {
         require(totalSupply + count < MAX_SUPPLY, "Excedes max supply.");
         require(count < MAX_PER_TX, "Exceeds max per transaction.");
         require(count * priceInWei == msg.value, "Invalid funds provided.");
-    
-        for(uint i; i < count; i++) { 
+
+        for(uint i; i < count; i++) {
             _mint(_msgSender(), totalSupply + i);
         }
     }
-    
+
     function getScavengeRate(uint256 tokenId) public view returns (uint256) {
         require(wastelandAddress != address(0x0), "Wasteland not explored yet!");
         return IWasteland(wastelandAddress).getScavengeRate(tokenId);
     }
 
-    function burn(uint256 tokenId) public { 
+    function burn(uint256 tokenId) public {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Not approved to burn.");
         _burn(tokenId);
     }
