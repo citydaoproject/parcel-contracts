@@ -1,7 +1,8 @@
+import { TransactionRequest } from '@ethersproject/providers';
 import { Signer } from 'ethers';
 import { ParcelNFT, ParcelNFT__factory } from '../../types/contracts';
 import { ContractAddress, EthereumAddress, ZERO_ADDRESS } from '../constants/accounts';
-import { deployUpgradeableProxy } from './upgradeableProxy';
+import { buildDeployUpgradeableProxyTransactionRequest, deployUpgradeableProxy } from './upgradeableProxy';
 
 export interface ParcelNFTInitParams {
   // the name of the token
@@ -39,3 +40,25 @@ export const createParcelNFT = async (
   const proxy = await deployUpgradeableProxy(signer, parcelNFTLogicAddress, initFunction);
   return ParcelNFT__factory.connect(proxy.address, signer);
 };
+
+/**
+ * Builds a transaction request to create and initialize an upgradeable Parcel NFT contract using the already-deployed
+ * ParcelNFT contract for implementation
+ *
+ * @param parcelNFTLogicAddress the deployed parcel contract that will be used for logic
+ * @param initParams (optional) the initialization parameters
+ */
+export const buildCreateParcelNFTTransactionRequest = (
+  parcelNFTLogicAddress: ContractAddress,
+  initParams: Partial<ParcelNFTInitParams> = {},
+): TransactionRequest =>
+  buildDeployUpgradeableProxyTransactionRequest(parcelNFTLogicAddress, buildParcelNFTInitFunction(initParams));
+
+/**
+ * Builds the initialization function for the ParcelNFT contract with the given inputs
+ * @param initParams (optional) the initialization parameters
+ */
+export const buildParcelNFTInitFunction = (initParams: Partial<ParcelNFTInitParams> = {}) =>
+  ParcelNFT__factory.createInterface().encodeFunctionData('initialize', [
+    { ...defaultParcelNFTInitParams, ...initParams },
+  ]);
