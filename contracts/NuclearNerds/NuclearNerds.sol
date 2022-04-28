@@ -74,26 +74,26 @@ contract NuclearNerds is ERC721Enumerable, Ownable {
         string memory _baseURI,
         uint256 _mint_length
     )
-        ERC721("Nuclear Nerds", "Nuclear Nerds")
+        ERC721("CityDAO Parcel-0 NFT", "CITY-PARCEL-0")
     {
         baseURI = _baseURI;
         MINT_END_PERIOD = block.timestamp + _mint_length;
+    }
+
+    function _baseURI() internal view override returns (string memory) {
+        return baseURI;
     }
 
     function setBaseURI(string memory _baseURI) public onlyOwner {
         baseURI = _baseURI;
     }
 
+
     function setMintEndPeriod( uint256 _end_mint_period) public onlyOwner {
         MINT_END_PERIOD = _end_mint_period;
         emit MintEndPeriodChanged(_end_mint_period);
     }
     
-    function tokenURI(uint256 _tokenId) public view override returns (string memory) {
-        require(_exists(_tokenId), "Token does not exist.");
-        return string(abi.encodePacked(baseURI, Strings.toString(_tokenId)));
-    }
-
     function setWhitelistMerkleRoot(bytes32 _whitelistMerkleRoot) external onlyOwner {
         whitelistMerkleRoot = _whitelistMerkleRoot;
         emit MerkleRootChanged(whitelistMerkleRoot);
@@ -108,8 +108,8 @@ contract NuclearNerds is ERC721Enumerable, Ownable {
         return MerkleProof.verify(proof, whitelistMerkleRoot, leaf);
     }
 
-    function getAllowance(address account, uint256 allowance, bytes32[] calldata proof) public view returns (string memory) {
-        require(_verify(_leaf(allowance, account), proof), "Invalid Merkle Tree proof supplied.");
+    function getAllowance(address account, uint256 allowance, bytes32[] calldata proof) public view returns (uint256) {
+        require(_verify(_leaf(account, allowance), proof), "Invalid Merkle Tree proof supplied.");
         return allowance;
     }
 
@@ -119,22 +119,12 @@ contract NuclearNerds is ERC721Enumerable, Ownable {
         require(addressToMinted[account] + count <= allowance, "Exceeds whitelist supply");
 
         addressToMinted[account] += count;
-        uint256 totalSupply = _owners.length;
+        uint256 totalSupply = totalSupply();
         for(uint i; i < count; i++) {
             _mint(_msgSender(), totalSupply + i);
         }
     }
 
-    function walletOfOwner(address _owner) public view returns (uint256[] memory) {
-        uint256 tokenCount = balanceOf(_owner);
-        if (tokenCount == 0) return new uint256[](0);
-
-        uint256[] memory tokensId = new uint256[](tokenCount);
-        for (uint256 i; i < tokenCount; i++) {
-            tokensId[i] = tokenOfOwnerByIndex(_owner, i);
-        }
-        return tokensId;
-    }
 
     function batchTransferFrom(address _from, address _to, uint256[] memory _tokenIds) public {
         for (uint256 i = 0; i < _tokenIds.length; i++) {
@@ -148,17 +138,4 @@ contract NuclearNerds is ERC721Enumerable, Ownable {
         }
     }
 
-    function isOwnerOf(address account, uint256[] calldata _tokenIds) external view returns (bool){
-        for(uint256 i; i < _tokenIds.length; ++i ){
-            if(_owners[_tokenIds[i]] != account)
-                return false;
-        }
-
-        return true;
-    }
-
-    function _mint(address to, uint256 tokenId) internal virtual override {
-        _owners.push(to);
-        emit Transfer(address(0), to, tokenId);
-    }
 }
