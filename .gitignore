@@ -140,6 +140,9 @@ node_modules
 .sass-cache/
 *.css.map
 
+# Enviormental Variables
+.env
+
 
 ################################################################################
 ### Serverless.gitignore
