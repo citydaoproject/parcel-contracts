@@ -116,7 +116,6 @@ describe("NuclearNerds", () => {
     describe("updateAllowlist", async () => {
         beforeEach(async function () {
             /* Deploy*/
-
             nuclear_nerds_contract = await ethers.getContractFactory("NuclearNerds");
 
             time_period = 10 * 24 * 60 * 60; // 10 DAYS
