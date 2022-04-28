@@ -65,14 +65,13 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
 import "./ERC721Enumerable.sol";
 
 interface IWasteland {
     function getScavengeRate(uint256 tokenId) external view returns (uint256);
 }
 
-contract NuclearNerds is ERC721Enumerable, Ownable, Pausable {
+contract NuclearNerds is ERC721Enumerable, Ownable {
     string  public              baseURI;
 
     address public              proxyRegistryAddress;
@@ -81,40 +80,41 @@ contract NuclearNerds is ERC721Enumerable, Ownable, Pausable {
 
     bytes32 public              whitelistMerkleRoot;
     uint256 public              MAX_SUPPLY;
+    uint256 public              MINT_END_PERIOD;
 
     uint256 public constant     MAX_PER_TX          = 6;
     uint256 public constant     RESERVES            = 111;
     uint256 public constant     priceInWei          = 0.069 ether;
+    
 
     mapping(address => bool) public projectProxy;
-    mapping(address => uint) public addressToMinted;
 
     event MerkleRootChanged(bytes32 _newWhitelistMerkleRoot);
+    event MintEndPeriodChanged(uint256 _end_mint_period);
 
     constructor(
         string memory _baseURI,
         address _proxyRegistryAddress,
-        address _jeffFromAccounting
+        address _jeffFromAccounting,
+        uint256 _mint_length
     )
         ERC721("Nuclear Nerds", "Nuclear Nerds")
     {
         baseURI = _baseURI;
         proxyRegistryAddress = _proxyRegistryAddress;
         jeffFromAccounting = _jeffFromAccounting;
+        MINT_END_PERIOD = block.timestamp + _mint_length;
     }
 
     function setBaseURI(string memory _baseURI) public onlyOwner {
         baseURI = _baseURI;
     }
 
-
-    function setPause() public onlyOwner {
-        _pause();
+    function setMintEndPeriod( uint256 _end_mint_period) public onlyOwner {
+        MINT_END_PERIOD = _end_mint_period;
+        emit MintEndPeriodChanged(_end_mint_period);
     }
 
-    function setUnpause() public onlyOwner {
-        _unpause();
-    }
     
     function tokenURI(uint256 _tokenId) public view override returns (string memory) {
         require(_exists(_tokenId), "Token does not exist.");
@@ -150,37 +150,53 @@ contract NuclearNerds is ERC721Enumerable, Ownable, Pausable {
     
     }
     
-    function _leaf(string memory allowance, string memory payload) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(payload, allowance));
+    function _leaf(uint256 tokenId, address account) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(tokenId, account));
     }
 
     function _verify(bytes32 leaf, bytes32[] memory proof) internal view returns (bool) {
         return MerkleProof.verify(proof, whitelistMerkleRoot, leaf);
     }
 
-    function getAllowance(string memory allowance, bytes32[] calldata proof) public view returns (string memory) {
-        string memory payload = string(abi.encodePacked(_msgSender()));
-        require(_verify(_leaf(allowance, payload), proof), "Invalid Merkle Tree proof supplied.");
-        return allowance;
-    }
+    // function getAllowance(string memory allowance, bytes32[] calldata proof) public view returns (string memory) {
+    //     string memory payload = string(abi.encodePacked(_msgSender()));
+    //     require(_verify(_leaf(allowance, payload), proof), "Invalid Merkle Tree proof supplied.");
+    //     return allowance;
+    // }
+
+    //  function batchWhitelistMint(uint256[] calldata tokenId, bytes32[] calldata proof) public payable {
+    //     string memory payload = string(abi.encodePacked(_msgSender()));
+    //     require( block.timestamp <= MINT_END_PERIOD, "Mint Period has overlapsed");
+    //     // Verify Each one
+    //     require(_verify(_leaf(Strings.toString(tokenId), payload), proof), "Invalid Merkle Tree proof supplied.");
+    //     // If tokenID is already minted then it should fail
+    //     for(uint i; i < tokenId.length; i++){
+    //     _mint(_msgSender(), tokenId[i]);
+    //     }
+    // }
+
 
     // preferable
-    function allowlistMint(uint256 tokenId, bytes32[] calldata proof) public payable {
-        string memory payload = string(abi.encodePacked(_msgSender()));
+    function whitelistMint(address account, uint256 tokenId, bytes32[] calldata proof) public payable {
+        require( block.timestamp <= MINT_END_PERIOD, "Mint Period has overlapsed");
+        require(_verify(_leaf(tokenId, account), proof), "Invalid Merkle Tree proof supplied.");
+        // If tokenID is already minted then it should fail from openzepplin
+        
+        _mint(account, tokenId);
     }
 
-    function whitelistMint(uint256 count, uint256 allowance, bytes32[] calldata proof) public whenNotPaused payable {
-        string memory payload = string(abi.encodePacked(_msgSender()));
-        require(_verify(_leaf(Strings.toString(allowance), payload), proof), "Invalid Merkle Tree proof supplied.");
-        require(addressToMinted[_msgSender()] + count <= allowance, "Exceeds whitelist supply");
-        require(count * priceInWei == msg.value, "Invalid funds provided.");
+    // function whitelistMint(uint256 count, uint256 allowance, bytes32[] calldata proof) public payable {
+    //     string memory payload = string(abi.encodePacked(_msgSender()));
+    //     require(_verify(_leaf(Strings.toString(allowance), payload), proof), "Invalid Merkle Tree proof supplied.");
+    //     require(addressToMinted[_msgSender()] + count <= allowance, "Exceeds whitelist supply");
+    //     require(count * priceInWei == msg.value, "Invalid funds provided.");
 
-        addressToMinted[_msgSender()] += count;
-        uint256 totalSupply = _owners.length;
-        for(uint i; i < count; i++) {
-            _mint(_msgSender(), totalSupply + i);
-        }
-    }
+    //     addressToMinted[_msgSender()] += count;
+    //     uint256 totalSupply = _owners.length;
+    //     for(uint i; i < count; i++) {
+    //         _mint(_msgSender(), totalSupply + i);
+    //     }
+    // }
 
     function publicMint(uint256 count) public payable {
         uint256 totalSupply = _owners.length;
@@ -246,10 +262,10 @@ contract NuclearNerds is ERC721Enumerable, Ownable, Pausable {
         return super.isApprovedForAll(_owner, operator);
     }
 
-    function _mint(address to, uint256 tokenId) internal virtual override {
-        _owners.push(to);
-        emit Transfer(address(0), to, tokenId);
-    }
+    // function _mint(address to, uint256 tokenId) internal virtual override {
+    //     _owners.push(to);
+    //     emit Transfer(address(0), to, tokenId);
+    // }
 }
 
 contract OwnableDelegateProxy { }
