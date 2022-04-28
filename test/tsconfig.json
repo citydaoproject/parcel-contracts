@@ -18,7 +18,8 @@
     "strictNullChecks": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "../out/test"
+    "outDir": "../out/test",
+    "resolveJsonModule": true
   },
   "files": [
     "../node_modules/@nomiclabs/hardhat-ethers/internal/index.d.ts",
