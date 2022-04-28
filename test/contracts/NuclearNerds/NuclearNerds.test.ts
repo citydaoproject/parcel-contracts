@@ -120,7 +120,7 @@ describe("NuclearNerds", () => {
             nuclear_nerds_contract = await ethers.getContractFactory("NuclearNerds");
 
             time_period = 10 * 24 * 60 * 60; // 10 DAYS
-            const args = ["",  ethers.constants.AddressZero.toString(),  ethers.constants.AddressZero.toString(), time_period.toString()] // Initialize args -- 10 Days
+            const args = ["", ethers.constants.AddressZero.toString(), ethers.constants.AddressZero.toString(), time_period.toString()] // Initialize args -- 10 Days
             nuclear_nerds = await nuclear_nerds_contract.deploy(...args);
         });
 
