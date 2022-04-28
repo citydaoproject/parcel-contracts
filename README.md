@@ -59,3 +59,16 @@ npm test
 ```
 npm run build
 ```
+
+## Deploying
+```
+npx hardhat run --network <localhost, rinkeby> scripts/deploy.ts
+```
+
+## Test Deployment info
+
+Ether_scan: https://rinkeby.etherscan.io/tx/0x8fb136794471e6d2e3b5ecb099b7921dcca4ef61d7c9c5707f3d97c7a132fd39
+
+Deployment Fee: 0.201023293242139011  ETHER
+
+Deployment Adddress: 0xe079dB2e4f4722bfc6d4C67383eD4caA1e577e26
