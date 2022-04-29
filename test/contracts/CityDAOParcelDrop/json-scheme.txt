@@ -1,1 +1,1 @@
-"TokenID" : "Ethereum Address"
+ "Ethereum Address" : "Token Allowance"
