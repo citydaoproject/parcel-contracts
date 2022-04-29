@@ -242,4 +242,36 @@ describe("CityDAOParcelDrop", () => {
         });
     });
 
+    describe('baseURI', async () => {
+        beforeEach(async function () {
+             /* Deploy*/
+             nuclear_nerds_contract = await ethers.getContractFactory("CityDAOParcelDrop");
+
+             time_period = 10 * 24 * 60 * 60; // 10 DAYS
+             const args = ["https://base.com/", time_period.toString()] // Initialize args -- 10 Days
+             nuclear_nerds = await nuclear_nerds_contract.deploy(...args);
+ 
+             // Set merkleroot
+             const MerkleRoot = merkle_tree.getHexRoot();
+ 
+             await nuclear_nerds.setWhitelistMerkleRoot(MerkleRoot);
+        });
+
+        it('should have correct tokenURI', async () => {
+
+            const allowance = 1;
+            const count = 1;
+
+            const owner_proof = merkle_tree.getHexProof(hashToken(owner.address, allowance));
+
+            await nuclear_nerds.whitelistMint(owner.address,count,  allowance, owner_proof);
+
+            const tokenId = 0;            
+            expect(await nuclear_nerds.tokenURI(tokenId)).to.be.eq("https://base.com/" + tokenId.toString());
+            
+        });
+
+    });
+
+
 });
