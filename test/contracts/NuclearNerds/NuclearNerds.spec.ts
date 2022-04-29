@@ -1,15 +1,15 @@
-import { expect, assert } from "chai";
-import { ethers, waffle, network } from "hardhat";
+import { expect } from "chai";
+import { ethers, network } from "hardhat";
 import { MerkleTree } from 'merkletreejs';
 import merkle_leaves from '/home/slyracoon23/Documents/CityDao/parcel-0/parcel-contracts/test/contracts/NuclearNerds/merkle-leaves.json';
 import keccak256 from 'keccak256';
 
 // https://docs.ethers.io/v5/api/utils/hashing/#utils-solidityKeccak256
-function hashToken(tokenId, account) {
-    return Buffer.from(ethers.utils.solidityKeccak256(['uint256', 'address'], [tokenId, account]).slice(2), 'hex')
+function hashToken(address, allowance) {
+    return Buffer.from(ethers.utils.solidityKeccak256(['address', 'uint256'], [address, allowance]).slice(2), 'hex')
 }
 
-describe("NuclearNerds", () => {
+describe("CityDAOParcelDrop", () => {
 
     /* Local Variables */
     let admin;
@@ -39,10 +39,10 @@ describe("NuclearNerds", () => {
     describe("allowlistMint", async () => {
         beforeEach(async function () {
             /* Deploy*/
-            nuclear_nerds_contract = await ethers.getContractFactory("NuclearNerds");
+            nuclear_nerds_contract = await ethers.getContractFactory("CityDAOParcelDrop");
 
             time_period = 10 * 24 * 60 * 60; // 10 DAYS
-            const args = ["", ethers.constants.AddressZero.toString(), ethers.constants.AddressZero.toString(), time_period.toString()] // Initialize args -- 10 Days
+            const args = ["", time_period.toString()] // Initialize args -- 10 Days
             nuclear_nerds = await nuclear_nerds_contract.deploy(...args);
 
             // Set merkleroot
@@ -57,57 +57,78 @@ describe("NuclearNerds", () => {
         // https://github.com/OpenZeppelin/workshops/blob/master/06-nft-merkle-drop/contracts/ERC721MerkleDrop.sol
         it('should mint if the merkle proof, account and token is correct', async () => {
 
-            const tokenId = 0;
+            const allowance = 1;
+            const count = 1;
 
-            const owner_proof = merkle_tree.getHexProof(hashToken(tokenId, owner.address));
+            const owner_proof = merkle_tree.getHexProof(hashToken(owner.address, allowance));
 
-            await expect(nuclear_nerds.whitelistMint(owner.address, tokenId, owner_proof))
+            await expect(nuclear_nerds.whitelistMint(owner.address,count,  allowance, owner_proof))
                 .to.emit(nuclear_nerds, 'Transfer')
-                .withArgs(ethers.constants.AddressZero, owner.address, tokenId);
+                .withArgs(ethers.constants.AddressZero, owner.address, 0);
 
 
         });
 
 
+        it('should mint if other caller is in merkle proof', async () => {
+
+            const allowance = 3;
+            const count = 1;
+            
+            
+            const other_proof = merkle_tree.getHexProof(hashToken(other.address, allowance));
+
+
+            await expect(nuclear_nerds.whitelistMint(other.address, count,  allowance, other_proof))
+                .to.emit(nuclear_nerds, 'Transfer')
+                .withArgs(ethers.constants.AddressZero, other.address, 0);
+
+
+        });
         it('should fail if token is already minted', async () => {
 
 
-            const tokenId = 0;
+            const allowance = 1;
+            const count = 1;
 
-            const owner_proof = merkle_tree.getHexProof(hashToken(tokenId, owner.address));
+            const owner_proof = merkle_tree.getHexProof(hashToken(owner.address, allowance));
 
-            await nuclear_nerds.whitelistMint(owner.address, tokenId, owner_proof);
+            await nuclear_nerds.whitelistMint(owner.address,count,  allowance, owner_proof)
 
-            await expect(nuclear_nerds.whitelistMint(owner.address, tokenId, owner_proof)).to.be.revertedWith(
-                "ERC721: token already minted"
+            await expect(nuclear_nerds.whitelistMint(owner.address,count,  allowance, owner_proof)).to.be.revertedWith(
+                "Exceeds whitelist allowance"
             );
 
         });
+
+
         it('should fail if token is not assigned to caller in merkle proof', async () => {
 
-            const tokenId = 0;
+            const allowance = 1;
+            const count = 1;
 
-            const owner_proof = merkle_tree.getHexProof(hashToken(tokenId, owner.address));
+            const owner_proof = merkle_tree.getHexProof(hashToken(owner.address, allowance));
 
 
-            await expect(nuclear_nerds.whitelistMint(other.address, tokenId, owner_proof)).to.be.revertedWith(
+            await expect(nuclear_nerds.whitelistMint(other.address,count,  allowance, owner_proof)).to.be.revertedWith(
                 "Invalid Merkle Tree proof supplied."
             );
 
 
         });
         // https://ethereum.stackexchange.com/questions/110859/how-do-i-retrieve-the-exact-gas-costs-spent-for-a-transaction-with-ethers-js
-        it('should cost less than 400k gas', async () => {
+        it('should cost less than 150k gas', async () => {
 
-            const tokenId = 0;
+            const allowance = 1;
+            const count = 1;
 
-            const owner_proof = merkle_tree.getHexProof(hashToken(tokenId, owner.address));
+            const owner_proof = merkle_tree.getHexProof(hashToken(owner.address, allowance));
 
-            const tx = await nuclear_nerds.whitelistMint(owner.address, tokenId, owner_proof);
+            const tx = await nuclear_nerds.whitelistMint(owner.address, count,  allowance, owner_proof);
 
             const receipt = await tx.wait();
 
-            expect(parseInt(receipt.gasUsed)).to.be.lessThan(100000); // ~ $12 at 40 GWEI and ETH: $3000
+            expect(parseInt(receipt.gasUsed)).to.be.lessThan(150000); // ~ $12 at 40 GWEI and ETH: $3000
 
         });
     });
@@ -116,10 +137,10 @@ describe("NuclearNerds", () => {
     describe("updateAllowlist", async () => {
         beforeEach(async function () {
             /* Deploy*/
-            nuclear_nerds_contract = await ethers.getContractFactory("NuclearNerds");
+            nuclear_nerds_contract = await ethers.getContractFactory("CityDAOParcelDrop");
 
             time_period = 10 * 24 * 60 * 60; // 10 DAYS
-            const args = ["", ethers.constants.AddressZero.toString(), ethers.constants.AddressZero.toString(), time_period.toString()] // Initialize args -- 10 Days
+            const args = ["", time_period.toString()] // Initialize args -- 10 Days
             nuclear_nerds = await nuclear_nerds_contract.deploy(...args);
         });
 
@@ -153,10 +174,10 @@ describe("NuclearNerds", () => {
     describe('updateMintPeriod', async () => {
         beforeEach(async function () {
             /* Deploy*/
-            nuclear_nerds_contract = await ethers.getContractFactory("NuclearNerds");
+            nuclear_nerds_contract = await ethers.getContractFactory("CityDAOParcelDrop");
 
             time_period = 10 * 24 * 60 * 60;
-            const args = ["", ethers.constants.AddressZero.toString(), ethers.constants.AddressZero.toString(), time_period.toString()] // Initialize args -- 10 Days
+            const args = ["", time_period.toString()] // Initialize args -- 10 Days
             nuclear_nerds = await nuclear_nerds_contract.deploy(...args);
 
             const deployed_block = await ethers.provider.getBlock(nuclear_nerds.deployTransaction.blockNumber);
@@ -186,8 +207,9 @@ describe("NuclearNerds", () => {
 
 
             const proof = ["0x0000000000000000000000000000000000000000000000000000000000000000"];
-            const tokenId = 0;
-
+            const allowance = 1;
+            const count = 1;
+            
             // Fast Forward Time
             await network.provider.send("evm_increaseTime", [time_period]);
             await network.provider.send("evm_mine");
@@ -196,7 +218,7 @@ describe("NuclearNerds", () => {
 
             const new_timestamp = latest_block.timestamp;
 
-            await expect(nuclear_nerds.whitelistMint(owner.address, tokenId, proof)).to.be.revertedWith(
+            await expect(nuclear_nerds.whitelistMint(owner.address, count,  allowance, proof)).to.be.revertedWith(
                 "Mint Period has overlapsed"
             );
 
