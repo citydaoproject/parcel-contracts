@@ -58,7 +58,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 // import "./ERC721Enumerable.sol";
 
 
-contract NuclearNerds is ERC721Enumerable, Ownable {
+contract CityDAOParcelDrop is ERC721Enumerable, Ownable {
     string  public              baseURI;
 
     bytes32 public              whitelistMerkleRoot;
@@ -116,15 +116,14 @@ contract NuclearNerds is ERC721Enumerable, Ownable {
     function whitelistMint(address account, uint256 count, uint256 allowance, bytes32[] calldata proof) public payable {
         require( block.timestamp <= MINT_END_PERIOD, "Mint Period has overlapsed");
         require(_verify(_leaf(account, allowance), proof), "Invalid Merkle Tree proof supplied.");
-        require(addressToMinted[account] + count <= allowance, "Exceeds whitelist supply");
+        require(addressToMinted[account] + count <= allowance, "Exceeds whitelist allowance");
 
         addressToMinted[account] += count;
         uint256 totalSupply = totalSupply();
         for(uint i; i < count; i++) {
-            _mint(_msgSender(), totalSupply + i);
+            _mint(account, totalSupply + i);
         }
     }
-
 
     function batchTransferFrom(address _from, address _to, uint256[] memory _tokenIds) public {
         for (uint256 i = 0; i < _tokenIds.length; i++) {
