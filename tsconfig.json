@@ -18,7 +18,8 @@
     "strictNullChecks": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "resolveJsonModule": true
   },
   "include": ["./src/**/*.ts"],
   "files": ["./node_modules/@types/node/index.d.ts"],
