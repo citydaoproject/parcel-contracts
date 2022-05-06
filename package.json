@@ -31,7 +31,8 @@
     "lint": "solhint 'contracts/**/*.sol' && eslint",
     "pretty": "pretty-quick",
     "release": "standard-version",
-    "prepublishOnly": "npm run rebuild && npm run release"
+    "prepublishOnly": "npm run rebuild && npm run release",
+    "ci-prepare": "cp example.secrets.json .secrets.json"
   },
   "husky": {
     "hooks": {
@@ -46,6 +47,7 @@
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "2.0.5",
+    "@nomiclabs/hardhat-etherscan": "3.0.3",
     "@nomiclabs/hardhat-waffle": "2.0.3",
     "@typechain/ethers-v5": "9.0.0",
     "@typechain/hardhat": "4.0.0",
@@ -62,6 +64,7 @@
     "eslint-plugin-prettier": "4.0.0",
     "ethereum-waffle": "3.4.4",
     "hardhat": "2.9.3",
+    "hardhat-etherscan": "1.0.1",
     "husky": "7.0.4",
     "merkletreejs": "0.2.31",
     "mocha": "9.2.2",

@@ -59,3 +59,21 @@ npm test
 ```
 npm run build
 ```
+
+## Verification
+
+Set up a `.secrets.json` file that looks similar to `example.secrets.json`:
+
+After deploying your contract, you can verify it by running the following:
+
+### Rinkeby
+```
+npx hardhat verify --network rinkeby CONTRACT_ADDRESS
+```
+
+### Mainnet
+```
+npx hardhat verify --network rinkeby CONTRACT_ADDRESS
+```
+
+See [hardhat-etherscan](https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html) for more examples
