@@ -15,6 +15,7 @@ const hardhatConfig: HardhatUserConfig = {
   },
 
   typechain: {
+    externalArtifacts: ['node_modules/@openzeppelin/contracts/build/contracts/ERC1967Proxy.json'],
     outDir: 'types/contracts',
     target: 'ethers-v5',
   },
