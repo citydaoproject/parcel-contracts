@@ -64,16 +64,32 @@ npm run build
 
 Set up a `.secrets.json` file that looks similar to `example.secrets.json`:
 
-After deploying your contract, you can verify it by running the following:
+After deploying your contract, you can verify it by running the following.
 
 ### Rinkeby
 ```
 npx hardhat verify --network rinkeby CONTRACT_ADDRESS
 ```
 
+For a proxy contract, you'll need to pass the arguments to the proxy contract, and pass the contract as well:
+
+```
+npx hardhat verify --network rinkeby \
+  --contract contracts/common/UpgradeableProxy.sol:UpgradeableProxy \
+  --constructor-args examples/parcelNFTConstructorParams.js \
+  CONTRACT_ADDRESS
+```
+
 ### Mainnet
 ```
 npx hardhat verify --network rinkeby CONTRACT_ADDRESS
+```
+
+```
+npx hardhat verify --network mainnet \
+  --contract contracts/common/UpgradeableProxy.sol:UpgradeableProxy \
+  --constructor-args examples/parcelNFTConstructorParams.js \
+  CONTRACT_ADDRESS
 ```
 
 See [hardhat-etherscan](https://hardhat.org/plugins/nomiclabs-hardhat-etherscan.html) for more examples

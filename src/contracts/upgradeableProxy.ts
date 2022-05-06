@@ -1,7 +1,7 @@
 import { TransactionRequest } from '@ethersproject/providers';
 import { Signer } from 'ethers';
 import { BytesLike } from 'ethers/lib/utils';
-import { ERC1967Proxy__factory } from '../../types/contracts';
+import { UpgradeableProxy__factory } from '../../types/contracts';
 import { ContractAddress } from '../constants/accounts';
 
 /**
@@ -16,7 +16,7 @@ export const deployUpgradeableProxy = async (
   signer: Signer,
   logicAddress: ContractAddress,
   initFunction: BytesLike = '0x',
-) => new ERC1967Proxy__factory(signer).deploy(logicAddress, initFunction);
+) => new UpgradeableProxy__factory(signer).deploy(logicAddress, initFunction);
 
 /**
  * Build a transaction to deploy an upgradeable proxy contract with the given contract address
@@ -28,4 +28,4 @@ export const deployUpgradeableProxy = async (
 export const buildDeployUpgradeableProxyTransactionRequest = (
   logicAddress: ContractAddress,
   initFunction: BytesLike = '0x',
-): TransactionRequest => new ERC1967Proxy__factory().getDeployTransaction(logicAddress, initFunction);
+): TransactionRequest => new UpgradeableProxy__factory().getDeployTransaction(logicAddress, initFunction);
