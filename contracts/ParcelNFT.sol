@@ -64,14 +64,21 @@ contract ParcelNFT is
   }
 
   /**
-   * @notice Sets `baseURI` as the base URI for all tokens. Used when explicit tokenURI not set.
+   * @notice Gets base URI for all tokens, if set.
    */
-  function setBaseURI(string calldata baseURI) external onlyRole(Roles.PARCEL_MANAGER) {
-    TokenUriStorage.setBaseURI(baseURI);
+  function baseURI() public view returns (string memory) {
+    return _baseURI();
   }
 
   function _baseURI() internal view virtual override returns (string memory) {
     return TokenUriStorage.baseURI();
+  }
+
+  /**
+   * @notice Sets `baseURI` as the base URI for all tokens. Used when explicit tokenURI not set.
+   */
+  function setBaseURI(string calldata __baseURI) external onlyRole(Roles.PARCEL_MANAGER) {
+    TokenUriStorage.setBaseURI(__baseURI);
   }
 
   /**
