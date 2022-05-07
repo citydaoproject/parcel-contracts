@@ -7,8 +7,8 @@ import '@gnus.ai/contracts-upgradeable-diamond/proxy/utils/UUPSUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/security/PausableUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/ERC721RoyaltyUpgradeable.sol';
-import './ParcelNFTStorage.sol';
 import './common/RoyaltyEventSupport.sol';
+import './common/TokenUriStorage.sol';
 import './Roles.sol';
 
 contract ParcelNFT is
@@ -58,11 +58,11 @@ contract ParcelNFT is
    * @notice Sets `baseURI` as the base URI for all tokens. Used when explicit tokenURI not set.
    */
   function setBaseURI(string calldata baseURI) external onlyRole(Roles.PARCEL_MANAGER) {
-    ParcelNFTStorage.setBaseURI(baseURI);
+    TokenUriStorage.setBaseURI(baseURI);
   }
 
   function _baseURI() internal view virtual override returns (string memory) {
-    return ParcelNFTStorage.baseURI();
+    return TokenUriStorage.baseURI();
   }
 
   /**
