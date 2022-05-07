@@ -7,7 +7,7 @@ import { INITIALIZER, USER1, USER2 } from '../../helpers/Accounts';
 import { createParcelNFT } from '../../helpers/contracts/ParcelNFTHelper';
 import { shouldSupportInterface } from '../../helpers/ERC165Helper';
 
-describe('supportsInterface', () => {
+describe('IERC2981', () => {
   shouldSupportInterface('IERC2981', () => createParcelNFT(), ERC2981_INTERFACE_ID);
 });
 
