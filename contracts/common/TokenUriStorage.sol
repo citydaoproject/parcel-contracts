@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.9;
 
-library ParcelNFTStorage {
+library TokenUriStorage {
   struct Layout {
     // storage for base URI
     string baseURI;
   }
 
-  bytes32 internal constant STORAGE_SLOT = keccak256('citydao.contracts.storage.ParcelNFT');
+  bytes32 internal constant STORAGE_SLOT = keccak256('citydao.contracts.storage.TokenUri');
 
   //noinspection NoReturn
   function layout() internal pure returns (Layout storage _layout) {

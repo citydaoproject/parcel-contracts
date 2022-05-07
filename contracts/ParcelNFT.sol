@@ -5,14 +5,16 @@ pragma solidity ^0.8.9;
 import '@gnus.ai/contracts-upgradeable-diamond/access/AccessControlUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/proxy/utils/UUPSUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/security/PausableUpgradeable.sol';
-import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol';
+import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/ERC721RoyaltyUpgradeable.sol';
-import './ParcelNFTStorage.sol';
+import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol';
 import './common/RoyaltyEventSupport.sol';
+import './common/TokenUriStorage.sol';
 import './Roles.sol';
 
 contract ParcelNFT is
   UUPSUpgradeable,
+  ERC721EnumerableUpgradeable,
   ERC721URIStorageUpgradeable,
   RoyaltyEventSupport,
   ERC721RoyaltyUpgradeable,
@@ -27,6 +29,7 @@ contract ParcelNFT is
 
   function initialize(InitParams memory initParams) public initializer {
     __ERC721_init(initParams.name, initParams.symbol);
+    __ERC721Enumerable_init_unchained();
     __ERC721URIStorage_init_unchained();
     __ERC2981_init_unchained();
     __ERC721Royalty_init_unchained();
@@ -48,21 +51,34 @@ contract ParcelNFT is
     public
     view
     virtual
-    override(AccessControlUpgradeable, ERC721RoyaltyUpgradeable, ERC721Upgradeable, ERC2981Upgradeable)
+    override(
+      AccessControlUpgradeable,
+      ERC721EnumerableUpgradeable,
+      ERC721RoyaltyUpgradeable,
+      ERC721Upgradeable,
+      ERC2981Upgradeable
+    )
     returns (bool)
   {
     return super.supportsInterface(interfaceId);
   }
 
   /**
-   * @notice Sets `baseURI` as the base URI for all tokens. Used when explicit tokenURI not set.
+   * @notice Gets base URI for all tokens, if set.
    */
-  function setBaseURI(string calldata baseURI) external onlyRole(Roles.PARCEL_MANAGER) {
-    ParcelNFTStorage.setBaseURI(baseURI);
+  function baseURI() public view returns (string memory) {
+    return _baseURI();
   }
 
   function _baseURI() internal view virtual override returns (string memory) {
-    return ParcelNFTStorage.baseURI();
+    return TokenUriStorage.baseURI();
+  }
+
+  /**
+   * @notice Sets `baseURI` as the base URI for all tokens. Used when explicit tokenURI not set.
+   */
+  function setBaseURI(string calldata __baseURI) external onlyRole(Roles.PARCEL_MANAGER) {
+    TokenUriStorage.setBaseURI(__baseURI);
   }
 
   /**
@@ -190,8 +206,20 @@ contract ParcelNFT is
     _unpause();
   }
 
-  function _burn(uint256 tokenId) internal virtual override(ERC721URIStorageUpgradeable, ERC721RoyaltyUpgradeable) {
+  function _burn(uint256 tokenId)
+    internal
+    virtual
+    override(ERC721URIStorageUpgradeable, ERC721RoyaltyUpgradeable, ERC721Upgradeable)
+  {
     super._burn(tokenId);
+  }
+
+  function _beforeTokenTransfer(
+    address from,
+    address to,
+    uint256 tokenId
+  ) internal virtual override(ERC721EnumerableUpgradeable, ERC721Upgradeable) {
+    super._beforeTokenTransfer(from, to, tokenId);
   }
 
   // solhint-disable-next-line no-empty-blocks

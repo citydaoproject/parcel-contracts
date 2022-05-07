@@ -14,6 +14,7 @@ describe('setBaseURI', () => {
 
     await parcelNFT.connect(USER1).setBaseURI('the-base/');
 
+    expect(await parcelNFT.baseURI()).to.eq('the-base/');
     expect(await parcelNFT.tokenURI(100)).to.eq('the-base/100');
   });
 

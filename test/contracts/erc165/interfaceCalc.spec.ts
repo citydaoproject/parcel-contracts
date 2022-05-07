@@ -3,6 +3,7 @@ import {
   ACCESS_CONTROL_INTERFACE_ID,
   Erc165InterfaceId,
   ERC2981_INTERFACE_ID,
+  ERC721_ENUMERABLE_INTERFACE_ID,
   ERC721_INTERFACE_ID,
   ERC721_METADATA_INTERFACE_ID,
 } from '../../../src/constants/interfaces';
@@ -32,13 +33,18 @@ const interfaceTests: InterfaceTest[] = [
     calcInterfaceId: (idCalc) => idCalc.calcERC721InterfaceId(),
   },
   {
+    name: 'ERC721Enumerable',
+    interfaceId: ERC721_ENUMERABLE_INTERFACE_ID,
+    calcInterfaceId: (idCalc) => idCalc.calcERC721EnumerableInterfaceId(),
+  },
+  {
     name: 'ERC721Metadata',
     interfaceId: ERC721_METADATA_INTERFACE_ID,
     calcInterfaceId: (idCalc) => idCalc.calcERC721MetadataInterfaceId(),
   },
 ];
 
-describe('calculations', () => {
+describe('ERC165 calculations', () => {
   interfaceTests.forEach(({ name, interfaceId, calcInterfaceId }) =>
     it(`should match ${name} interface id`, async () => {
       const idCalc = await new ERC165IdCalc__factory(INITIALIZER).deploy();

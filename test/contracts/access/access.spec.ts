@@ -7,7 +7,7 @@ import { createParcelNFT } from '../../helpers/contracts/ParcelNFTHelper';
 import { shouldSupportInterface } from '../../helpers/ERC165Helper';
 import { ROLE1, ROLE2 } from '../../helpers/Roles';
 
-describe('supportsInterface', () => {
+describe('IAccessControl', () => {
   shouldSupportInterface('IAccessControl', () => createParcelNFT(), ACCESS_CONTROL_INTERFACE_ID);
 });
 
