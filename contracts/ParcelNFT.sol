@@ -8,13 +8,62 @@ import '@gnus.ai/contracts-upgradeable-diamond/security/PausableUpgradeable.sol'
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/ERC721RoyaltyUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol';
+import './common/AllowListClaim.sol';
 import './common/RoyaltyEventSupport.sol';
 import './common/TokenUriStorage.sol';
 import './Roles.sol';
 
+/*
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&&&&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@&BG5YJ??7777777?JY5PB#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@&BPJ7!!!7?JY55PPPP55YJ?7!!!7J5B&@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@&GJ7!!?YPB&&@@@@@@@@@@@@@@@&BGY?!!!JP#@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@BY!!7YG#@@@@@@@@@@@@@@@@@@@@@@@@@@&GY7!!JG@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@P?!!JG&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@BY!!?P&@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@B?!!Y#@@@@@@@@@@@@@@@@&GYJ@@@@@@@@@@@@@@@@@@#57!7G@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@&Y!!J#@@@@@@@@@@@@@@&B5??YG#@@@@@@@@@@@@@@@@@@@@&Y!!J#@@@@@@@@@@@@@
+ * @@@@@@@@@@@@#?!!P@@@@@@@@@@@@@#PJ?JPB&#PY@@@@@@@@@@@@@@@@@@@@@@G7!7B@@@@@@@@@@@@
+ * @@@@@@@@@@@B7!7B@@@@@@@@@@@GY??5B##GY??5B@@@@@@@@@@@@@@@@##@@@@@#?!!G@@@@@@@@@@@
+ * @@@@@@@@@@#7!7#@@@@@@@@@@@@5P#&B5??YG#&G5@@@@@@@@@@@@&GY?!7?5B&@@&?!!B@@@@@@@@@@
+ * @@@@@@@@@@?!!B@@@@@@@@@@@@@#PJ?JP#&BPJ?JG@@@@@@@@&B5J7!!!!J#PJ?JP##7!7&@@@@@@@@@
+ * @@@@@@@@@P!!Y@@@@@@@@@@@@@@Y5B&#GY?J5B&#G@@@@@#PY7!!!!!!!!J@@@&B5JJ7!!Y@@@@@@@@@
+ * @@@@@@@@@?!!#@@@@@@@@@@@@@@&B5??YG&#GY??P@@@@J!!!!!!!!!!!!J@@@@@@@&BPJ?&@@@@@@@@
+ * @@@@@@@@#!!?@@@@@@@@@@@@@@@YJP#&B5J?YG#&B@@@&7!!!!!!!!!!!!J@@@@@@@@@@@&@@@@@@@@@
+ * @@@@@@@@B!!Y@@@@@@@@@@@@@@@&#PJ?JP#&#PJ?Y@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@B!!Y@@@@@@@@@@@@@@@Y?5B&#GY??5B&#@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@#!!?@@@@@@@@@@@@@@@&&B5??YG#&BY?J@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@?!!#@@@@@@#GYJ5B&@5?JP#&BPJ?YG#&@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@G!!Y@@&B5?!!!!YJ?JYB#GY?JPB&#PJJ@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@J!!YJ7!!!!!!7&@#GY?!!JB#GY??5B&@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@&7!!!!!!!!!!7&@@@@@#PJ??YG#&B5Y@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@#7!!!!!!!!!7&@@@@@@@@&&#PJ?JP#@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@&?!!!!!!!!7&@@@@@@@@@Y?5B&#PY@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@5!!!!!!!7&@@@@@@@@@&&GY??5B@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@#J!!!!!7&@@@@@@@@@Y?YG#&BP@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@BJ!!!7&@@@@@@@@@#&#PJ?JG@@@&7!!!!!!!!!!!!J@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@#57!&@@@@@@@@@5?J5B&#B@@@&7!!!!!!!!!!!!Y@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@&B&@@@@@@@@@G#&B5?!7@@@@7!!!!!!!!!?YG&@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@J?7!!!!7YYYJ!!!!!7?YP#@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@PYJJJ??????JY5PB#&@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ * |--------------------------------------------------------------------------------|
+ * Hello fellow CityDAO Citizen,
+ * In this smart contract you find the Parcel-0 Drop from CityDAO!
+ * We are using an merkle proof whitelisting drop to reduce gas cost.
+ *
+ * ~ Let's Build this City!
+ *
+ * Developed By: @slyRacoon23 & @mdnatx
+ */
 contract ParcelNFT is
   UUPSUpgradeable,
-  ERC721EnumerableUpgradeable,
+  AllowListClaim,
   ERC721URIStorageUpgradeable,
   RoyaltyEventSupport,
   ERC721RoyaltyUpgradeable,
@@ -45,6 +94,17 @@ contract ParcelNFT is
   // todo: temporary until minting is supported
   function mint(uint256 tokenId) external onlyRole(Roles.PARCEL_MANAGER) {
     _safeMint(_msgSender(), tokenId);
+  }
+
+  /**
+   * @notice Attempts to mint the given amount of tokens to the given account.
+   */
+  function allowListMint(
+    uint256 amount,
+    uint256 allowance,
+    bytes32[] calldata proof
+  ) public payable {
+    _allowListMint(_msgSender(), amount, allowance, proof);
   }
 
   function supportsInterface(bytes4 interfaceId)
@@ -103,6 +163,20 @@ contract ParcelNFT is
    */
   function setTokenURI(uint256 tokenId, string memory _tokenURI) external onlyRole(Roles.PARCEL_MANAGER) {
     _setTokenURI(tokenId, _tokenURI);
+  }
+
+  /**
+   * @notice sets the claim period start and end with block timestamps
+   */
+  function setClaimPeriod(uint256 start, uint256 end) public onlyRole(Roles.PARCEL_MANAGER) {
+    _setClaimPeriod(start, end);
+  }
+
+  /**
+   * @notice Sets the merkle root for the allow list claim
+   */
+  function setMerkleRoot(bytes32 _merkleRoot) public onlyRole(Roles.PARCEL_MANAGER) {
+    _setMerkleRoot(_merkleRoot);
   }
 
   /**
