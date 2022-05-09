@@ -27,6 +27,11 @@ export const ERC2981_INTERFACE_ID = toErc165InterfaceId(0x2a55205a);
 export const ERC721_INTERFACE_ID = toErc165InterfaceId(0x80ac58cd);
 
 /**
+ * @description Batch Transfer
+ */
+export const ERC721_BATCH_TRANSFER_INTERFACE_ID = toErc165InterfaceId(0xa9d6d321);
+
+/**
  * @description Supports totalSupply, tokenOfOwnerByIndex, and tokenByIndex
  */
 export const ERC721_ENUMERABLE_INTERFACE_ID = toErc165InterfaceId(0x780e9d63);

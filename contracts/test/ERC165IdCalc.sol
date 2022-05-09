@@ -8,6 +8,7 @@ import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/IERC721Upgradeable.s
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/IERC721MetadataUpgradeable.sol';
 import '../common/IAllowListClaim.sol';
+import '../common/IERC721BatchTransfer.sol';
 
 library ERC165IdCalc {
   function calcAccessControlInterfaceId() external pure returns (bytes4) {
@@ -24,6 +25,10 @@ library ERC165IdCalc {
 
   function calcERC721InterfaceId() external pure returns (bytes4) {
     return type(IERC721Upgradeable).interfaceId;
+  }
+
+  function calcERC721BatchTransferInterfaceId() external pure returns (bytes4) {
+    return type(IERC721BatchTransfer).interfaceId;
   }
 
   function calcERC721EnumerableInterfaceId() external pure returns (bytes4) {

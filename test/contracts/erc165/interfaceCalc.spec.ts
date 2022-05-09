@@ -4,6 +4,7 @@ import {
   ALLOW_LIST_CLAIM_INTERFACE_ID,
   Erc165InterfaceId,
   ERC2981_INTERFACE_ID,
+  ERC721_BATCH_TRANSFER_INTERFACE_ID,
   ERC721_ENUMERABLE_INTERFACE_ID,
   ERC721_INTERFACE_ID,
   ERC721_METADATA_INTERFACE_ID,
@@ -37,6 +38,11 @@ const interfaceTests: InterfaceTest[] = [
     name: 'ERC721',
     interfaceId: ERC721_INTERFACE_ID,
     calcInterfaceId: (idCalc) => idCalc.calcERC721InterfaceId(),
+  },
+  {
+    name: 'ERC721BatchTransfer',
+    interfaceId: ERC721_BATCH_TRANSFER_INTERFACE_ID,
+    calcInterfaceId: (idCalc) => idCalc.calcERC721BatchTransferInterfaceId(),
   },
   {
     name: 'ERC721Enumerable',

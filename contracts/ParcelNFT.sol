@@ -12,6 +12,7 @@ import './common/AllowListClaim.sol';
 import './common/RoyaltyEventSupport.sol';
 import './common/TokenUriStorage.sol';
 import './Roles.sol';
+import './common/ERC721BatchTransfer.sol';
 
 /*
  * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -67,6 +68,7 @@ contract ParcelNFT is
   ERC721URIStorageUpgradeable,
   RoyaltyEventSupport,
   ERC721RoyaltyUpgradeable,
+  ERC721BatchTransfer,
   AccessControlUpgradeable,
   PausableUpgradeable
 {
@@ -106,7 +108,14 @@ contract ParcelNFT is
     public
     view
     virtual
-    override(AccessControlUpgradeable, AllowListClaim, ERC721RoyaltyUpgradeable, ERC721Upgradeable, ERC2981Upgradeable)
+    override(
+      AccessControlUpgradeable,
+      AllowListClaim,
+      ERC721RoyaltyUpgradeable,
+      ERC721Upgradeable,
+      ERC721BatchTransfer,
+      ERC2981Upgradeable
+    )
     returns (bool)
   {
     return super.supportsInterface(interfaceId);
