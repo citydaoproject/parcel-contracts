@@ -1,12 +1,18 @@
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
 import { ZERO_ADDRESS } from '../../../src/constants/accounts';
+import { ALLOW_LIST_CLAIM_INTERFACE_ID } from '../../../src/constants/interfaces';
 import { PARCEL_MANAGER_ROLE } from '../../../src/constants/roles';
 import { buildMerkleTreeForAllowList, getMerkleProof } from '../../../src/contracts/AllowListClaim';
 import { toByte32String } from '../../../src/utils/fixedBytes';
 import { INITIALIZER, USER1, USER2, USER3 } from '../../helpers/Accounts';
 import { setValidClaimPeriod } from '../../helpers/contracts/AllowListClaimHelper';
 import { createParcelNFT } from '../../helpers/contracts/ParcelNFTHelper';
+import { shouldSupportInterface } from '../../helpers/ERC165Helper';
+
+describe('AllowListClaim', () => {
+  shouldSupportInterface('IAllowListClaim', () => createParcelNFT(), ALLOW_LIST_CLAIM_INTERFACE_ID);
+});
 
 describe('setMerkleRoot', () => {
   it('should set the merkle root', async () => {
@@ -96,6 +102,7 @@ describe('allowListMint', () => {
 
     await parcelNFT.connect(USER1).allowListMint(1, 1, getMerkleProof(USER1.address, 1, merkleTree));
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(1);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.totalSupply()).to.eq(1);
   });
@@ -111,12 +118,16 @@ describe('allowListMint', () => {
     await parcelNFT.connect(USER1).allowListMint(1, 2, getMerkleProof(USER1.address, 2, merkleTree));
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(1);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(1);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.totalSupply()).to.eq(1);
 
     await parcelNFT.connect(USER2).allowListMint(1, 1, getMerkleProof(USER2.address, 1, merkleTree));
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(1);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(1);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(1);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(2);
     expect(await parcelNFT.totalSupply()).to.eq(2);
@@ -124,6 +135,8 @@ describe('allowListMint', () => {
     await parcelNFT.connect(USER1).allowListMint(1, 2, getMerkleProof(USER1.address, 2, merkleTree));
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(2);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(1);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 1)).to.eq(3);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(2);
@@ -143,6 +156,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(2);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(0);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 1)).to.eq(2);
     expect(await parcelNFT.totalSupply()).to.eq(2);
@@ -151,6 +167,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(2);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(1);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(1);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(0);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 1)).to.eq(2);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(3);
@@ -160,6 +179,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(2);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(3);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(3);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(0);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 1)).to.eq(2);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(3);
@@ -171,6 +193,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(2);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(5);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(5);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(0);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 1)).to.eq(2);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(3);
@@ -184,6 +209,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(2);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(5);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(5);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(5);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(5);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 1)).to.eq(2);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(3);
@@ -202,6 +230,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(2);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(5);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(7);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(5);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(7);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 1)).to.eq(2);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(3);
@@ -222,6 +253,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(2);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(5);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(10);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(5);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(10);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 1)).to.eq(2);
     expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(3);
@@ -257,6 +291,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(0);
     expect(await parcelNFT.totalSupply()).to.eq(0);
 
     await expect(
@@ -265,6 +302,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(0);
     expect(await parcelNFT.totalSupply()).to.eq(0);
 
     await expect(
@@ -273,6 +313,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(0);
     expect(await parcelNFT.totalSupply()).to.eq(0);
   });
 
@@ -291,6 +334,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(0);
     expect(await parcelNFT.totalSupply()).to.eq(0);
 
     await parcelNFT.connect(USER2).allowListMint(3, 5, getMerkleProof(USER2.address, 5, merkleTree));
@@ -300,6 +346,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(3);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(3);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(0);
     expect(await parcelNFT.totalSupply()).to.eq(3);
 
     await parcelNFT.connect(USER3).allowListMint(3, 10, getMerkleProof(USER3.address, 10, merkleTree));
@@ -311,6 +360,9 @@ describe('allowListMint', () => {
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(4);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(5);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(3);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(6);
     expect(await parcelNFT.totalSupply()).to.eq(9);
   });
 
@@ -354,5 +406,67 @@ describe('allowListMint', () => {
           .populateTransaction.allowListMint(1, 5, getMerkleProof(USER2.address, 5, merkleTree)),
       ),
     ).to.be.lt(400000);
+  });
+});
+
+describe('alreadyClaimed', () => {
+  it('should return 0 if not claimed', async () => {
+    const parcelNFT = await createParcelNFT();
+    await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, INITIALIZER.address);
+    await setValidClaimPeriod(parcelNFT);
+
+    const merkleTree = buildMerkleTreeForAllowList({ [USER1.address]: 1, [USER2.address]: 1 });
+    await parcelNFT.setMerkleRoot(merkleTree.getHexRoot());
+
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
+
+    await parcelNFT.connect(USER1).allowListMint(1, 1, getMerkleProof(USER1.address, 1, merkleTree));
+    expect(await parcelNFT.balanceOf(USER1.address)).to.eq(1);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(1);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
+    expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
+    expect(await parcelNFT.totalSupply()).to.eq(1);
+  });
+
+  it('should return the correct number when claimed', async () => {
+    const parcelNFT = await createParcelNFT();
+    await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, INITIALIZER.address);
+    await setValidClaimPeriod(parcelNFT);
+
+    const merkleTree = buildMerkleTreeForAllowList({ [USER1.address]: 5, [USER2.address]: 5 });
+    await parcelNFT.setMerkleRoot(merkleTree.getHexRoot());
+
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
+
+    await parcelNFT.connect(USER1).allowListMint(2, 5, getMerkleProof(USER1.address, 5, merkleTree));
+    expect(await parcelNFT.balanceOf(USER1.address)).to.eq(2);
+    expect(await parcelNFT.balanceOf(USER2.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
+    expect(await parcelNFT.totalSupply()).to.eq(2);
+
+    await parcelNFT.connect(USER2).allowListMint(3, 5, getMerkleProof(USER2.address, 5, merkleTree));
+    await parcelNFT.connect(USER2).transferFrom(USER2.address, USER1.address, 5);
+    expect(await parcelNFT.balanceOf(USER1.address)).to.eq(3);
+    expect(await parcelNFT.balanceOf(USER2.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(3);
+    expect(await parcelNFT.totalSupply()).to.eq(5);
+
+    await parcelNFT.connect(USER1).allowListMint(3, 5, getMerkleProof(USER1.address, 5, merkleTree));
+    expect(await parcelNFT.balanceOf(USER1.address)).to.eq(6);
+    expect(await parcelNFT.balanceOf(USER2.address)).to.eq(2);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(5);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(3);
+    expect(await parcelNFT.totalSupply()).to.eq(8);
+
+    await parcelNFT.connect(USER2).allowListMint(2, 5, getMerkleProof(USER2.address, 5, merkleTree));
+    expect(await parcelNFT.balanceOf(USER1.address)).to.eq(6);
+    expect(await parcelNFT.balanceOf(USER2.address)).to.eq(4);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(5);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(5);
+    expect(await parcelNFT.totalSupply()).to.eq(10);
   });
 });

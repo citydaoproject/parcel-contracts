@@ -106,13 +106,7 @@ contract ParcelNFT is
     public
     view
     virtual
-    override(
-      AccessControlUpgradeable,
-      ERC721EnumerableUpgradeable,
-      ERC721RoyaltyUpgradeable,
-      ERC721Upgradeable,
-      ERC2981Upgradeable
-    )
+    override(AccessControlUpgradeable, AllowListClaim, ERC721RoyaltyUpgradeable, ERC721Upgradeable, ERC2981Upgradeable)
     returns (bool)
   {
     return super.supportsInterface(interfaceId);

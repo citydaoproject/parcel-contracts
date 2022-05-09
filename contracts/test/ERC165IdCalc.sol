@@ -7,10 +7,15 @@ import '@gnus.ai/contracts-upgradeable-diamond/interfaces/IERC2981Upgradeable.so
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/IERC721Upgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/IERC721MetadataUpgradeable.sol';
+import '../common/IAllowListClaim.sol';
 
 library ERC165IdCalc {
   function calcAccessControlInterfaceId() external pure returns (bytes4) {
     return type(IAccessControlUpgradeable).interfaceId;
+  }
+
+  function calcAllowListClaimInterfaceId() external pure returns (bytes4) {
+    return type(IAllowListClaim).interfaceId;
   }
 
   function calcERC2981InterfaceId() external pure returns (bytes4) {

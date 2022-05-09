@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import {
   ACCESS_CONTROL_INTERFACE_ID,
+  ALLOW_LIST_CLAIM_INTERFACE_ID,
   Erc165InterfaceId,
   ERC2981_INTERFACE_ID,
   ERC721_ENUMERABLE_INTERFACE_ID,
@@ -21,6 +22,11 @@ const interfaceTests: InterfaceTest[] = [
     name: 'AccessControl',
     interfaceId: ACCESS_CONTROL_INTERFACE_ID,
     calcInterfaceId: (idCalc) => idCalc.calcAccessControlInterfaceId(),
+  },
+  {
+    name: 'AllowListClaim',
+    interfaceId: ALLOW_LIST_CLAIM_INTERFACE_ID,
+    calcInterfaceId: (idCalc) => idCalc.calcAllowListClaimInterfaceId(),
   },
   {
     name: 'ERC2981',

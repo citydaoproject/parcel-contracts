@@ -16,9 +16,22 @@ import './AllowListClaimStorage.sol';
  */
 abstract contract AllowListClaim is IAllowListClaim, ERC721EnumerableUpgradeable {
   /**
+   * @dev See {IERC165-supportsInterface}.
+   */
+  function supportsInterface(bytes4 interfaceId)
+    public
+    view
+    virtual
+    override(ERC721EnumerableUpgradeable)
+    returns (bool)
+  {
+    return interfaceId == type(IAllowListClaim).interfaceId || super.supportsInterface(interfaceId);
+  }
+
+  /**
    * @inheritdoc IAllowListClaim
    */
-  function claimPeriod() public view virtual returns (uint256, uint256) {
+  function claimPeriod() public view virtual override returns (uint256, uint256) {
     return AllowListClaimStorage.claimPeriod();
   }
 
@@ -34,7 +47,7 @@ abstract contract AllowListClaim is IAllowListClaim, ERC721EnumerableUpgradeable
   /**
    * @inheritdoc IAllowListClaim
    */
-  function merkleRoot() public view virtual returns (bytes32) {
+  function merkleRoot() public view virtual override returns (bytes32) {
     return AllowListClaimStorage.merkleRoot();
   }
 
@@ -49,7 +62,7 @@ abstract contract AllowListClaim is IAllowListClaim, ERC721EnumerableUpgradeable
   /**
    * @inheritdoc IAllowListClaim
    */
-  function alreadyClaimed(address account) public view virtual returns (uint256) {
+  function alreadyClaimed(address account) public view virtual override returns (uint256) {
     return AllowListClaimStorage.alreadyClaimed(account);
   }
 
