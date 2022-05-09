@@ -1,16 +1,11 @@
 import { expect } from 'chai';
 import { BigNumber } from 'ethers';
-import { DateTime } from 'luxon';
 import { ZERO_ADDRESS } from '../../../src/constants/accounts';
 import { PARCEL_MANAGER_ROLE } from '../../../src/constants/roles';
-import {
-  buildMerkleTreeForAllowList,
-  convertToClaimPeriodTimestamp,
-  getMerkleProof,
-} from '../../../src/contracts/AllowListClaim';
+import { buildMerkleTreeForAllowList, getMerkleProof } from '../../../src/contracts/AllowListClaim';
 import { toByte32String } from '../../../src/utils/fixedBytes';
-import { ParcelNFT } from '../../../types/contracts';
 import { INITIALIZER, USER1, USER2, USER3 } from '../../helpers/Accounts';
+import { setValidClaimPeriod } from '../../helpers/contracts/AllowListClaimHelper';
 import { createParcelNFT } from '../../helpers/contracts/ParcelNFTHelper';
 
 describe('setMerkleRoot', () => {
@@ -361,11 +356,3 @@ describe('allowListMint', () => {
     ).to.be.lt(400000);
   });
 });
-
-const setValidClaimPeriod = async (parcelNFT: ParcelNFT) => {
-  const now = DateTime.now();
-  await parcelNFT.setClaimPeriod(
-    convertToClaimPeriodTimestamp(now),
-    convertToClaimPeriodTimestamp(now.plus({ hour: 1 })),
-  );
-};

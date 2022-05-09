@@ -91,11 +91,6 @@ contract ParcelNFT is
     _setupRole(Roles.SUPER_ADMIN, initParams.superAdmin);
   }
 
-  // todo: temporary until minting is supported
-  function mint(uint256 tokenId) external onlyRole(Roles.PARCEL_MANAGER) {
-    _safeMint(_msgSender(), tokenId);
-  }
-
   /**
    * @notice Attempts to mint the given amount of tokens to the given account.
    */
