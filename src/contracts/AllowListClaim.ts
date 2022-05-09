@@ -48,6 +48,6 @@ export const buildAccountAllowanceHash = (address: EthereumAddress, allowance: B
  * @param timestamp A Luxon DateTime or a formatted timestamp (ISO 8601)
  */
 export const convertToClaimPeriodTimestamp = (timestamp: string | DateTime): BigNumber => {
-  const dateTime = 'fromISO' in DateTime ? timestamp : DateTime.fromISO(timestamp);
+  const dateTime = 'toMillis' in DateTime ? timestamp : DateTime.fromISO(timestamp);
   return BigNumber.from(dateTime.toMillis()).div(1000);
 };
