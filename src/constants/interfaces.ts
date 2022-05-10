@@ -12,6 +12,11 @@ export const toErc165InterfaceId = (value: BytesLike | Hexable | number): Erc165
 export const ACCESS_CONTROL_INTERFACE_ID = toErc165InterfaceId(0x7965db0b);
 
 /**
+ * @description Allow List Claim
+ */
+export const ALLOW_LIST_CLAIM_INTERFACE_ID = toErc165InterfaceId(0xa63de308);
+
+/**
  * @description Royalty standard
  */
 export const ERC2981_INTERFACE_ID = toErc165InterfaceId(0x2a55205a);
@@ -20,6 +25,11 @@ export const ERC2981_INTERFACE_ID = toErc165InterfaceId(0x2a55205a);
  * @description NFT standard
  */
 export const ERC721_INTERFACE_ID = toErc165InterfaceId(0x80ac58cd);
+
+/**
+ * @description Batch Transfer
+ */
+export const ERC721_BATCH_TRANSFER_INTERFACE_ID = toErc165InterfaceId(0xa9d6d321);
 
 /**
  * @description Supports totalSupply, tokenOfOwnerByIndex, and tokenByIndex

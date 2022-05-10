@@ -5,7 +5,9 @@ import {
   ERC721_METADATA_INTERFACE_ID,
 } from '../../../src/constants/interfaces';
 import { PARCEL_MANAGER_ROLE } from '../../../src/constants/roles';
-import { USER1, USER2 } from '../../helpers/Accounts';
+import { buildMerkleTreeForAllowList, getMerkleProof } from '../../../src/contracts/AllowListClaim';
+import { INITIALIZER, USER1, USER2 } from '../../helpers/Accounts';
+import { setValidClaimPeriod } from '../../helpers/contracts/AllowListClaimHelper';
 import { createParcelNFT } from '../../helpers/contracts/ParcelNFTHelper';
 import { shouldSupportInterface } from '../../helpers/ERC165Helper';
 
@@ -21,17 +23,20 @@ describe('ERC721Enumerable', () => {
   describe('totalSupply', () => {
     it('should return the totalSupply', async () => {
       const parcelNFT = await createParcelNFT();
-      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, USER1.address);
-      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, USER2.address);
+      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, INITIALIZER.address);
+
+      await setValidClaimPeriod(parcelNFT);
+
+      const merkleTree = buildMerkleTreeForAllowList({ [USER1.address]: 10, [USER2.address]: 10 });
+      await parcelNFT.setMerkleRoot(merkleTree.getHexRoot());
 
       expect(await parcelNFT.totalSupply()).to.eq(0);
 
-      await parcelNFT.connect(USER1).mint(100);
+      await parcelNFT.connect(USER1).allowListMint(1, 10, getMerkleProof(USER1.address, 10, merkleTree));
       expect(await parcelNFT.totalSupply()).to.eq(1);
 
-      await parcelNFT.connect(USER1).mint(101);
-      await parcelNFT.connect(USER2).mint(102);
-      await parcelNFT.connect(USER1).mint(103);
+      await parcelNFT.connect(USER1).allowListMint(2, 10, getMerkleProof(USER1.address, 10, merkleTree));
+      await parcelNFT.connect(USER2).allowListMint(1, 10, getMerkleProof(USER2.address, 10, merkleTree));
       expect(await parcelNFT.totalSupply()).to.eq(4);
     });
   });
@@ -39,44 +44,50 @@ describe('ERC721Enumerable', () => {
   describe('tokenOfOwnerByIndex', () => {
     it('should return the token at the given index for the given user', async () => {
       const parcelNFT = await createParcelNFT();
-      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, USER1.address);
-      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, USER2.address);
+      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, INITIALIZER.address);
 
-      await parcelNFT.connect(USER1).mint(100);
-      expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(100);
+      await setValidClaimPeriod(parcelNFT);
 
-      await parcelNFT.connect(USER2).mint(101);
-      expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(100);
-      expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(101);
+      const merkleTree = buildMerkleTreeForAllowList({ [USER1.address]: 10, [USER2.address]: 10 });
+      await parcelNFT.setMerkleRoot(merkleTree.getHexRoot());
 
-      await parcelNFT.connect(USER1).mint(102);
-      await parcelNFT.connect(USER1).mint(103);
-      expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(100);
-      expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 1)).to.eq(102);
-      expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 2)).to.eq(103);
-      expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(101);
+      await parcelNFT.connect(USER1).allowListMint(1, 10, getMerkleProof(USER1.address, 10, merkleTree));
+      expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
+
+      await parcelNFT.connect(USER2).allowListMint(1, 10, getMerkleProof(USER2.address, 10, merkleTree));
+      expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
+      expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(2);
+
+      await parcelNFT.connect(USER1).allowListMint(2, 10, getMerkleProof(USER1.address, 10, merkleTree));
+      expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 0)).to.eq(1);
+      expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 1)).to.eq(3);
+      expect(await parcelNFT.tokenOfOwnerByIndex(USER1.address, 2)).to.eq(4);
+      expect(await parcelNFT.tokenOfOwnerByIndex(USER2.address, 0)).to.eq(2);
     });
   });
 
   describe('tokenByIndex', () => {
     it('should return the token at the given index', async () => {
       const parcelNFT = await createParcelNFT();
-      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, USER1.address);
-      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, USER2.address);
+      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, INITIALIZER.address);
 
-      await parcelNFT.connect(USER1).mint(100);
-      expect(await parcelNFT.tokenByIndex(0)).to.eq(100);
+      await setValidClaimPeriod(parcelNFT);
 
-      await parcelNFT.connect(USER2).mint(101);
-      expect(await parcelNFT.tokenByIndex(0)).to.eq(100);
-      expect(await parcelNFT.tokenByIndex(1)).to.eq(101);
+      const merkleTree = buildMerkleTreeForAllowList({ [USER1.address]: 10, [USER2.address]: 10 });
+      await parcelNFT.setMerkleRoot(merkleTree.getHexRoot());
 
-      await parcelNFT.connect(USER1).mint(102);
-      await parcelNFT.connect(USER1).mint(103);
-      expect(await parcelNFT.tokenByIndex(0)).to.eq(100);
-      expect(await parcelNFT.tokenByIndex(1)).to.eq(101);
-      expect(await parcelNFT.tokenByIndex(2)).to.eq(102);
-      expect(await parcelNFT.tokenByIndex(3)).to.eq(103);
+      await parcelNFT.connect(USER1).allowListMint(1, 10, getMerkleProof(USER1.address, 10, merkleTree));
+      expect(await parcelNFT.tokenByIndex(0)).to.eq(1);
+
+      await parcelNFT.connect(USER2).allowListMint(1, 10, getMerkleProof(USER2.address, 10, merkleTree));
+      expect(await parcelNFT.tokenByIndex(0)).to.eq(1);
+      expect(await parcelNFT.tokenByIndex(1)).to.eq(2);
+
+      await parcelNFT.connect(USER1).allowListMint(2, 10, getMerkleProof(USER1.address, 10, merkleTree));
+      expect(await parcelNFT.tokenByIndex(0)).to.eq(1);
+      expect(await parcelNFT.tokenByIndex(1)).to.eq(2);
+      expect(await parcelNFT.tokenByIndex(2)).to.eq(3);
+      expect(await parcelNFT.tokenByIndex(3)).to.eq(4);
     });
   });
 });
@@ -99,12 +110,17 @@ describe('ERC721Metadata', () => {
   describe('tokenURI', () => {
     it('should return the token URI', async () => {
       const parcelNFT = await createParcelNFT();
-      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, USER1.address);
+      await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, INITIALIZER.address);
 
-      await parcelNFT.connect(USER1).mint(100);
+      await setValidClaimPeriod(parcelNFT);
 
-      await parcelNFT.connect(USER1).setBaseURI('https://the.base.uri/');
-      expect(await parcelNFT.tokenURI(100)).to.eq('https://the.base.uri/100');
+      const merkleTree = buildMerkleTreeForAllowList({ [USER1.address]: 10, [USER2.address]: 10 });
+      await parcelNFT.setMerkleRoot(merkleTree.getHexRoot());
+
+      await parcelNFT.connect(USER1).allowListMint(1, 10, getMerkleProof(USER1.address, 10, merkleTree));
+
+      await parcelNFT.setBaseURI('https://the.base.uri/');
+      expect(await parcelNFT.tokenURI(1)).to.eq('https://the.base.uri/1');
     });
   });
 });
