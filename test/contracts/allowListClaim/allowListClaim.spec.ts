@@ -3,7 +3,7 @@ import { BigNumber } from 'ethers';
 import { DateTime } from 'luxon';
 import { ZERO_ADDRESS } from '../../../src/constants/accounts';
 import { ALLOW_LIST_CLAIM_INTERFACE_ID } from '../../../src/constants/interfaces';
-import { PARCEL_MANAGER_ROLE } from '../../../src/constants/roles';
+import { PARCEL_MANAGER_ROLE, PAUSER_ROLE } from '../../../src/constants/roles';
 import {
   buildMerkleTreeForAllowList,
   convertToClaimPeriodTimestamp,
@@ -412,6 +412,30 @@ describe('allowListMint', () => {
     await expect(
       parcelNFT.connect(USER1).allowListMint(1, 1, getMerkleProof(USER1.address, 1, merkleTree)),
     ).to.be.revertedWith('claim period has already ended');
+    expect(await parcelNFT.balanceOf(USER1.address)).to.eq(0);
+    expect(await parcelNFT.balanceOf(USER2.address)).to.eq(0);
+    expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER1.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER2.address)).to.eq(0);
+    expect(await parcelNFT.alreadyClaimed(USER3.address)).to.eq(0);
+    expect(await parcelNFT.totalSupply()).to.eq(0);
+  });
+
+  it('should fail if paused', async () => {
+    const parcelNFT = await createParcelNFT();
+    await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, INITIALIZER.address);
+    await parcelNFT.grantRole(PAUSER_ROLE, INITIALIZER.address);
+
+    await setValidClaimPeriod(parcelNFT);
+
+    const merkleTree = buildMerkleTreeForAllowList({ [USER1.address]: 1 });
+    await parcelNFT.setMerkleRoot(merkleTree.getHexRoot());
+
+    await parcelNFT.pause();
+
+    await expect(
+      parcelNFT.connect(USER1).allowListMint(1, 1, getMerkleProof(USER1.address, 1, merkleTree)),
+    ).to.be.revertedWith('paused');
     expect(await parcelNFT.balanceOf(USER1.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER2.address)).to.eq(0);
     expect(await parcelNFT.balanceOf(USER3.address)).to.eq(0);
