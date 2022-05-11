@@ -290,7 +290,7 @@ contract ParcelNFT is
     address from,
     address to,
     uint256 tokenId
-  ) internal virtual override(ERC721EnumerableUpgradeable, ERC721Upgradeable) {
+  ) internal virtual override(ERC721EnumerableUpgradeable, ERC721Upgradeable) whenNotPaused {
     super._beforeTokenTransfer(from, to, tokenId);
   }
 
