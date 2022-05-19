@@ -11,7 +11,7 @@ describe('IAccessControl', () => {
   shouldSupportInterface('IAccessControl', () => createParcelNFT(), ACCESS_CONTROL_INTERFACE_ID);
 });
 
-describe('initialized with zero address', () => {
+describe('SuperUser initialized with zero address', () => {
   it('should set caller as super admin', async () => {
     const parcelNFT = await createParcelNFT({ superAdmin: ZERO_ADDRESS });
     expect(await parcelNFT.hasRole(SUPER_ADMIN_ROLE, INITIALIZER.address)).to.be.true;
@@ -33,7 +33,7 @@ describe('initialized with zero address', () => {
   });
 });
 
-describe('initialized with another address', () => {
+describe('SuperUser initialized with another address', () => {
   it('should set caller as super admin', async () => {
     const parcelNFT = await createParcelNFT({ superAdmin: USER1.address });
     expect(await parcelNFT.hasRole(SUPER_ADMIN_ROLE, USER1.address)).to.be.true;

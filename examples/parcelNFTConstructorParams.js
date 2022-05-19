@@ -1,8 +1,8 @@
 const { buildParcelNFTInitFunction } = require('../dist/src/contracts/parcelNFT');
 module.exports = [
-  '0xc0cA359c8ce6De21B98fC6c7921a08703f453Fe9',
+  '0xEB667659b19dfc8B6b3b6FaAFaE3b5D7661dcB68',
   buildParcelNFTInitFunction({
-    name: 'ParcelNFT Test 2022-05-07-02',
-    symbol: 'PT050702',
+    name: 'CityDAO Parcel-0',
+    symbol: 'CityDAO-P0',
   }),
 ];
