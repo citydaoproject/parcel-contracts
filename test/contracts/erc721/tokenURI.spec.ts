@@ -66,6 +66,7 @@ describe('setTokenURI', () => {
   it('should fail if not called with parcel manager', async () => {
     const parcelNFT = await createParcelNFT();
     await parcelNFT.grantRole(PARCEL_MANAGER_ROLE, INITIALIZER.address);
+    await parcelNFT.transferOwnership(USER1.address);
 
     await setValidClaimPeriod(parcelNFT);
 

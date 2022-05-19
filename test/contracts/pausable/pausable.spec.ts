@@ -19,12 +19,15 @@ describe('pause', () => {
 
   it('should fail if called by non-pauser', async () => {
     const parcelNFT = await createParcelNFT();
+    await parcelNFT.grantRole(PAUSER_ROLE, INITIALIZER.address);
+    await parcelNFT.transferOwnership(USER1.address);
 
     expect(parcelNFT.connect(USER1).pause()).to.be.revertedWith('missing role');
 
     expect(await parcelNFT.paused()).to.be.false;
 
     await parcelNFT.grantRole(PAUSER_ROLE, USER1.address);
+    await parcelNFT.connect(USER1).transferOwnership(USER2.address);
 
     expect(parcelNFT.connect(USER2).pause()).to.be.revertedWith('missing role');
 
@@ -71,6 +74,7 @@ describe('unpause', () => {
   it('should fail if called by non-pauser', async () => {
     const parcelNFT = await createParcelNFT();
     await parcelNFT.grantRole(PAUSER_ROLE, INITIALIZER.address);
+    await parcelNFT.transferOwnership(USER1.address);
 
     await parcelNFT.pause();
 
@@ -79,6 +83,7 @@ describe('unpause', () => {
     expect(await parcelNFT.paused()).to.be.true;
 
     await parcelNFT.grantRole(PAUSER_ROLE, USER1.address);
+    await parcelNFT.connect(USER1).transferOwnership(USER2.address);
 
     expect(parcelNFT.connect(USER2).unpause()).to.be.revertedWith('missing role');
 

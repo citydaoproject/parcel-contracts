@@ -25,6 +25,7 @@ describe('setDefaultRoyalty', () => {
 
   it('should fail if not called by parcel manager', async () => {
     const parcelNFT = await createParcelNFT();
+    await parcelNFT.transferOwnership(USER1.address);
 
     await expect(parcelNFT.connect(USER1).setDefaultRoyalty(USER2.address, 200)).to.be.revertedWith('missing role');
 

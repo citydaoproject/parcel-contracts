@@ -3,6 +3,7 @@
 pragma solidity ^0.8.9;
 
 import '@gnus.ai/contracts-upgradeable-diamond/access/AccessControlUpgradeable.sol';
+import '@gnus.ai/contracts-upgradeable-diamond/access/OwnableUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/proxy/utils/UUPSUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/security/PausableUpgradeable.sol';
 import '@gnus.ai/contracts-upgradeable-diamond/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol';
@@ -70,6 +71,7 @@ contract ParcelNFT is
   ERC721RoyaltyUpgradeable,
   ERC721BatchTransfer,
   AccessControlUpgradeable,
+  OwnableUpgradeable,
   PausableUpgradeable
 {
   struct InitParams {
@@ -91,6 +93,7 @@ contract ParcelNFT is
       initParams.superAdmin = _msgSender();
     }
     _setupRole(Roles.SUPER_ADMIN, initParams.superAdmin);
+    _transferOwnership(initParams.superAdmin);
   }
 
   /**

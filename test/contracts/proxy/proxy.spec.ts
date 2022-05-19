@@ -31,6 +31,7 @@ describe('createParcelNFT', () => {
     const parcelNFTLogic = await deployParcelNFT();
     const parcelNFT = await createParcelNFT(INITIALIZER, parcelNFTLogic.address);
     await parcelNFT.grantRole(UPGRADER_ROLE, INITIALIZER.address);
+    await parcelNFT.transferOwnership(USER1.address);
 
     const newParcelNFTLogic = await deployParcelNFT();
     await expect(parcelNFT.connect(USER1).upgradeTo(newParcelNFTLogic.address)).to.be.revertedWith('missing role');
