@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/citydaoproject/parcel-contracts/compare/v0.0.5...v0.0.6) (2022-05-20)
+
+### Features
+
+- [[#13](https://github.com/citydaoproject/parcel-contracts/issues/13)] added ownable ([b015f65](https://github.com/citydaoproject/parcel-contracts/commit/b015f65b03b74861ce7d57f2fb7ecc95938394a0))
+- [[#13](https://github.com/citydaoproject/parcel-contracts/issues/13)] allow setting the owner during upgrade ([6222bf4](https://github.com/citydaoproject/parcel-contracts/commit/6222bf4f1a112bc3f7cef7cb599e850ffd46599f))
+
 ### [0.0.5](https://github.com/citydaoproject/parcel-contracts/compare/v0.0.4...v0.0.5) (2022-05-11)
 
 ### Bug Fixes
