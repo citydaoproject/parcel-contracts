@@ -1,6 +1,6 @@
 import { BigNumber, providers } from 'ethers';
 import { keccak256, toUtf8Bytes } from 'ethers/lib/utils';
-import { ContractAddress } from '../../src/constants/accounts';
+import { ContractAddress } from '../constants/accounts';
 
 export const readStorageValue = async (provider: providers.Provider, address: ContractAddress, location: BigNumber) =>
   (await readStorageValues(provider, address, location, 1))[0];
