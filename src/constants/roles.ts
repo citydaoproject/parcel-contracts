@@ -10,3 +10,4 @@ export const SUPER_ADMIN_ROLE = toAccessRole(0);
 export const PARCEL_MANAGER_ROLE = keccak256(toUtf8Bytes('citydao.ParcelManager'));
 export const PAUSER_ROLE = keccak256(toUtf8Bytes('citydao.Pauser'));
 export const UPGRADER_ROLE = keccak256(toUtf8Bytes('citydao.Upgrader'));
+export const OWNERSHIP_MANAGER_ROLE = keccak256(toUtf8Bytes('citydao.OwnershipManager'));

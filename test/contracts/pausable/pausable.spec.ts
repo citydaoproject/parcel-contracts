@@ -82,8 +82,11 @@ describe('unpause', () => {
 
     expect(await parcelNFT.paused()).to.be.true;
 
-    await parcelNFT.grantRole(PAUSER_ROLE, USER1.address);
+    await parcelNFT.unpause();
     await parcelNFT.connect(USER1).transferOwnership(USER2.address);
+    await parcelNFT.pause();
+
+    await parcelNFT.grantRole(PAUSER_ROLE, USER1.address);
 
     expect(parcelNFT.connect(USER2).unpause()).to.be.revertedWith('missing role');
 

@@ -281,6 +281,16 @@ contract ParcelNFT is
     _unpause();
   }
 
+  function transferOwnership(address newOwner) public virtual override whenNotPaused {
+    address sender = _msgSender();
+    require(
+      owner() == sender || hasRole(Roles.OWNERSHIP_MANAGER, sender),
+      'Ownable: caller is not the owner nor ownership manager.'
+    );
+    require(newOwner != address(0), 'Ownable: new owner is the zero address');
+    _transferOwnership(newOwner);
+  }
+
   function _burn(uint256 tokenId)
     internal
     virtual
